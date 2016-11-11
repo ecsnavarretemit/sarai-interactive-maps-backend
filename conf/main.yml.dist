@@ -1,7 +1,5 @@
-# Application Configuration
-APP:
-  # enable or disable application debugging
-  DEBUG: true
+COMMON: &common
+  DEBUG: False
 
   EARTH_ENGINE_API:
     # service email address used in communicating with the Earth Engine API
@@ -15,5 +13,12 @@ APP:
 
     # array of scopes used to interact with the Earth Engine API
     SCOPES: []
+
+DEVELOPMENT: &development
+  <<: *common
+  DEBUG: True
+
+# PRODUCTION: &production
+#   <<: *common
 
 
