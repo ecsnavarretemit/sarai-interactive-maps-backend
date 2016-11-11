@@ -1,0 +1,19 @@
+# Application Configuration
+app:
+  # enable or disable application debugging
+  debug: true
+
+  earth_engine_api:
+    # service email address used in communicating with the Earth Engine API
+    account: ''
+
+    # path to the private key file
+    private_key: ''
+
+    # secret password provided by the key generation tool
+    key_secret: ''
+
+    # array of scopes used to interact with the Earth Engine API
+    scopes: []
+
+
