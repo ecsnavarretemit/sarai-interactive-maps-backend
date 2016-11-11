@@ -8,5 +8,6 @@ from app import app
 
 if __name__ == "__main__":
   # run the application
-  app.run(debug=app.config['PY_DEBUG_MODE'])
+  app.run(debug=app.config['DEBUG'])
+
 

@@ -5,11 +5,13 @@
 # Version 0.0.0
 
 import os
-from app.flask_extended import Flask
+from flask import Flask
+from flask_environments import Environments
 
 # instantiate the application
 app = Flask(__name__)
-app.config.from_yaml(os.path.join(app.root_path, '../conf/main.yml'))
+env = Environments(app)
+env.from_yaml(os.path.join(os.getcwd(), 'conf/main.yml'))
 
 @app.route("/")
 def main():
