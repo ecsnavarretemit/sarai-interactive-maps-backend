@@ -10,7 +10,7 @@ import json
 import itertools
 import urllib
 from datetime import datetime, timedelta
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from flask_cors import cross_origin
 from app import EE_CREDENTIALS, cache, app
 
@@ -22,6 +22,19 @@ def ndvi_mapper(image):
   mask = data.eq(1)
 
   return image.select().addBands(image.normalizedDifference(['B8', 'B4'])).updateMask(mask)
+
+def ndvi_clipper(image):
+  ft = "ft:%s" % app.config['NDVI']['LOCATION_METADATA_FUSION_TABLE']
+  province = ee.FeatureCollection(ft)
+
+  place = request.args.get('place')
+
+  return image.clip(province.filter(ee.Filter.eq('NAME_1', place)).geometry())
+
+def ndvi_cache_key(*args, **kwargs):
+  path = request.path
+  args = str(hash(frozenset(request.args.items())))
+  return (path + args).encode('utf-8')
 
 @mod.route('/places', methods=['GET'])
 @cross_origin()
@@ -55,7 +68,7 @@ def get_places():
 # cache the result of this endpoint for 12 hours
 @mod.route('/<start_date>/<number_of_days>', methods=['GET'])
 @cross_origin()
-@cache.memoize(43200)
+@cache.cached(timeout=43200, key_prefix=ndvi_cache_key)
 def date_and_range(start_date, number_of_days):
   date_format_str = "%Y-%m-%d"
   start_date_obj = datetime.strptime(start_date, date_format_str)
@@ -88,6 +101,9 @@ def date_and_range(start_date, number_of_days):
     'max': 1,
     'palette': 'FFFFFF, CE7E45, FCD163, 66A000, 207401, 056201, 004C00, 023B01, 012E01, 011301'
   }
+
+  if request.args.get('place') is not None:
+    ndvi = ndvi.map(ndvi_clipper)
 
   map_object = ndvi.getMapId(visualization_styles)
   map_id = map_object['mapid']
