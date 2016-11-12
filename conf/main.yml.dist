@@ -1,6 +1,9 @@
 COMMON: &common
   DEBUG: False
 
+  HOST: '127.0.0.1'
+  PORT: 5000
+
   CACHE:
     TYPE: 'filesystem'
     DIRECTORY: 'data/cache'
@@ -20,6 +23,14 @@ COMMON: &common
 
     # array of scopes used to interact with the Earth Engine API
     SCOPES: []
+
+  GOOGLE_API:
+    API_KEY: ''
+    FUSION_TABLES_SQL_ENDPOINT: 'https://www.googleapis.com/fusiontables/v1/query'
+
+  NDVI:
+    LOCATION_METADATA_FUSION_TABLE: ''
+    LOCATION_FUSION_TABLE_COLUMN: ''
 
 DEVELOPMENT: &development
   <<: *common
