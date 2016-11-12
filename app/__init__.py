@@ -19,13 +19,14 @@ ma = Marshmallow(app)
 
 @app.errorhandler(404)
 def page_not_found(e):
-  return jsonify(error=404, text=str(e), success=False)
+  return jsonify(error=404, text=str(e.description), success=False)
 
 # Flask Views
-from app.views import regions
+from app.views import regions, crops
 
 # Flask Blueprints
 app.register_blueprint(regions.mod)
+app.register_blueprint(crops.mod)
 
 @app.route("/")
 def main():
