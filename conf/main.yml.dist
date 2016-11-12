@@ -1,6 +1,8 @@
 COMMON: &common
   DEBUG: False
 
+  PORT: 5000
+
   CACHE:
     TYPE: 'filesystem'
     DIRECTORY: 'data/cache'

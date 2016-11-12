@@ -10,6 +10,6 @@ from app import app
 
 if __name__ == "__main__":
   # run the application
-  app.run(debug=app.config['DEBUG'])
+  app.run(debug=app.config['DEBUG'], port=app.config['PORT'])
 
 
