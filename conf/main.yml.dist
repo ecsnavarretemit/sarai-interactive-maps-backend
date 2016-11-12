@@ -1,6 +1,13 @@
 COMMON: &common
   DEBUG: False
 
+  CACHE:
+    TYPE: 'filesystem'
+    DIRECTORY: 'data/cache'
+
+  # example: `mysql://user:someuserpassword@localhost/app_db`
+  SQLALCHEMY_DATABASE_URI: '<db_vendor>://<username>:<password>@<db_hostname>/<db_name>'
+
   EARTH_ENGINE_API:
     # service email address used in communicating with the Earth Engine API
     ACCOUNT: ''
