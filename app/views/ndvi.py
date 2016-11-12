@@ -29,7 +29,7 @@ def ndvi_clipper(image):
 
   place = request.args.get('place')
 
-  return image.clip(province.filter(ee.Filter.eq('NAME_1', place)).geometry())
+  return image.clip(province.filter(ee.Filter.eq(app.config['NDVI']['LOCATION_FUSION_TABLE_COLUMN'], place)).geometry())
 
 def ndvi_cache_key(*args, **kwargs):
   path = request.path
@@ -40,7 +40,9 @@ def ndvi_cache_key(*args, **kwargs):
 @cross_origin()
 @cache.cached(timeout=604800)
 def get_places():
-  query = "SELECT NAME_1 from %s" % app.config['NDVI']['LOCATION_METADATA_FUSION_TABLE']
+  ndvi_config = app.config['NDVI']
+
+  query = "SELECT %s from %s" % (ndvi_config['LOCATION_FUSION_TABLE_COLUMN'], ndvi_config['LOCATION_METADATA_FUSION_TABLE'])
   api_key = app.config['GOOGLE_API']['API_KEY']
 
   query_params = {'sql': query, 'key': api_key}

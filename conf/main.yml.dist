@@ -29,6 +29,7 @@ COMMON: &common
 
   NDVI:
     LOCATION_METADATA_FUSION_TABLE: ''
+    LOCATION_FUSION_TABLE_COLUMN: ''
 
 DEVELOPMENT: &development
   <<: *common
