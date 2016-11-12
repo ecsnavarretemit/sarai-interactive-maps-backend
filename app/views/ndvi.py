@@ -42,8 +42,11 @@ def ndvi_cache_key(*args, **kwargs):
 def get_places():
   ndvi_config = app.config['NDVI']
 
-  query = "SELECT %s from %s" % (ndvi_config['LOCATION_FUSION_TABLE_COLUMN'], ndvi_config['LOCATION_METADATA_FUSION_TABLE'])
   api_key = app.config['GOOGLE_API']['API_KEY']
+  query = "SELECT %s from %s" % (
+    ndvi_config['LOCATION_FUSION_TABLE_COLUMN'],
+    ndvi_config['LOCATION_METADATA_FUSION_TABLE']
+  )
 
   query_params = {'sql': query, 'key': api_key}
   endpoint = app.config['GOOGLE_API']['FUSION_TABLES_SQL_ENDPOINT'] + "?" + urllib.urlencode(query_params)
