@@ -30,13 +30,28 @@ cache = Cache(app, config={
 def page_not_found(e):
   return jsonify(error=404, text=str(e.description), success=False)
 
+# begin authorization
+ee_api_config = app.config['EARTH_ENGINE_API']
+
+private_key_file = os.path.join(os.getcwd(), ee_api_config['PRIVATE_KEY'])
+if not os.path.exists(private_key_file):
+  print "Private key file not found on path: %s" % private_key_file
+  sys.exit(1)
+
+# get authorization from the google servers
+EE_CREDENTIALS = ServiceAccountCredentials.from_p12_keyfile(ee_api_config['ACCOUNT'],
+                                                            private_key_file,
+                                                            ee_api_config['KEY_SECRET'],
+                                                            ee_api_config['SCOPES'])
+
 # Flask Views
-from app.views import regions, crops, provinces
+from app.views import regions, crops, provinces, ndvi
 
 # Flask Blueprints
 app.register_blueprint(regions.mod)
 app.register_blueprint(crops.mod)
 app.register_blueprint(provinces.mod)
+app.register_blueprint(ndvi.mod)
 
 @app.route("/")
 def main():
