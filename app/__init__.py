@@ -45,13 +45,14 @@ EE_CREDENTIALS = ServiceAccountCredentials.from_p12_keyfile(ee_api_config['ACCOU
                                                             ee_api_config['SCOPES'])
 
 # Flask Views
-from app.views import regions, crops, provinces, ndvi
+from app.views import regions, crops, provinces, ndvi, chirps
 
 # Flask Blueprints
 app.register_blueprint(regions.mod)
 app.register_blueprint(crops.mod)
 app.register_blueprint(provinces.mod)
 app.register_blueprint(ndvi.mod)
+app.register_blueprint(chirps.mod)
 
 @app.route("/")
 def main():
