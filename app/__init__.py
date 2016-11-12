@@ -22,11 +22,12 @@ def page_not_found(e):
   return jsonify(error=404, text=str(e.description), success=False)
 
 # Flask Views
-from app.views import regions, crops
+from app.views import regions, crops, provinces
 
 # Flask Blueprints
 app.register_blueprint(regions.mod)
 app.register_blueprint(crops.mod)
+app.register_blueprint(provinces.mod)
 
 @app.route("/")
 def main():
