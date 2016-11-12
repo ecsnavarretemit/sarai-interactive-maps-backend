@@ -5,13 +5,14 @@
 # Version 1.0.0-alpha1
 
 import ee
+import requests
+import json
+import itertools
+import urllib
 from datetime import datetime, timedelta
 from flask import Blueprint, jsonify
 from flask_cors import cross_origin
-from app import EE_CREDENTIALS, cache
-
-# from ee_app import ee_auth
-# from ee_app import cache as app_cache
+from app import EE_CREDENTIALS, cache, app
 
 mod = Blueprint('ndvi', __name__, url_prefix='/ndvi')
 
@@ -21,6 +22,35 @@ def ndvi_mapper(image):
   mask = data.eq(1)
 
   return image.select().addBands(image.normalizedDifference(['B8', 'B4'])).updateMask(mask)
+
+@mod.route('/places', methods=['GET'])
+@cross_origin()
+@cache.cached(timeout=604800)
+def get_places():
+  query = "SELECT NAME_1 from %s" % app.config['NDVI']['LOCATION_METADATA_FUSION_TABLE']
+  api_key = app.config['GOOGLE_API']['API_KEY']
+
+  query_params = {'sql': query, 'key': api_key}
+  endpoint = app.config['GOOGLE_API']['FUSION_TABLES_SQL_ENDPOINT'] + "?" + urllib.urlencode(query_params)
+
+  response = requests.get(endpoint)
+
+  # transform json string into Python data
+  json_object = json.loads(response.text)
+
+  # since Google returns nested array we flatten those arrays into one array
+  places = list(itertools.chain.from_iterable(json_object['rows']))
+
+  # sort the places alphabetically
+  places.sort()
+
+  # assemble the resulting response
+  result = {
+    'success': True,
+    'places': places
+  }
+
+  return jsonify(**result)
 
 # cache the result of this endpoint for 12 hours
 @mod.route('/<start_date>/<number_of_days>', methods=['GET'])
