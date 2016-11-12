@@ -36,7 +36,7 @@ def by_id(region_id):
 
   # invoke the page not found handler when region is not found
   if region is None:
-    abort(404)
+    abort(404, 'Region not found')
 
   region_schema = RegionSchema()
   result = region_schema.dump(region)
@@ -54,7 +54,7 @@ def by_slug(slug):
 
   # invoke the page not found handler when region is not found
   if region is None:
-    abort(404)
+    abort(404, 'Region not found')
 
   region_schema = RegionSchema()
   result = region_schema.dump(region)
