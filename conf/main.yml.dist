@@ -23,6 +23,13 @@ COMMON: &common
     # array of scopes used to interact with the Earth Engine API
     SCOPES: []
 
+  GOOGLE_API:
+    API_KEY: ''
+    FUSION_TABLES_SQL_ENDPOINT: 'https://www.googleapis.com/fusiontables/v1/query'
+
+  NDVI:
+    LOCATION_METADATA_FUSION_TABLE: ''
+
 DEVELOPMENT: &development
   <<: *common
   DEBUG: True
