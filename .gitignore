@@ -106,5 +106,7 @@ ENV/
 conf/main.yml
 conf/creds
 data
+_scripts
+sarai-maps-api.wsgi
 
 
