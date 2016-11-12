@@ -2,7 +2,7 @@
 #
 # Copyright(c) Exequiel Ceasar Navarrete <esnavarrete1@up.edu.ph>
 # Licensed under MIT
-# Version 1.0.0-alpha3
+# Version 1.0.0-alpha4
 
 from flask import Blueprint, jsonify, abort
 from flask_cors import cross_origin
@@ -27,6 +27,7 @@ def index():
   return jsonify(response)
 
 @mod.route('/<province_id>', methods=['GET'])
+@cross_origin()
 def by_id(province_id):
   province = Province.query.get(province_id)
 
@@ -45,6 +46,7 @@ def by_id(province_id):
   return jsonify(response)
 
 @mod.route('/slug/<slug>', methods=['GET'])
+@cross_origin()
 def by_slug(slug):
   province = Province.query.filter_by(slug=slug).first()
 
