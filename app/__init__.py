@@ -7,11 +7,13 @@
 import os
 from flask import Flask
 from flask_environments import Environments
+from flask_sqlalchemy import SQLAlchemy
 
 # instantiate the application
 app = Flask(__name__)
 env = Environments(app)
 env.from_yaml(os.path.join(os.getcwd(), 'conf/main.yml'))
+db = SQLAlchemy(app)
 
 @app.route("/")
 def main():
