@@ -2,7 +2,7 @@
 #
 # Copyright(c) Exequiel Ceasar Navarrete <esnavarrete1@up.edu.ph>
 # Licensed under MIT
-# Version 1.0.0-alpha3
+# Version 1.0.0-alpha4
 
 from app import db
 from slugify import slugify
