@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 
-# run.py
+# bootstrap.py
 #
 # Copyright(c) Exequiel Ceasar Navarrete <esnavarrete1@up.edu.ph>
 # Licensed under MIT
 # Version 1.0.0-alpha1
 
-from app import app
+from app import db
 
-if __name__ == "__main__":
-  # run the application
-  app.run(debug=app.config['DEBUG'])
+# create all databases and tables included in the application
+db.create_all()
 
 

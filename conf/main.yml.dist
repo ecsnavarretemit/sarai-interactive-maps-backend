@@ -1,19 +1,31 @@
-# Application Configuration
-app:
-  # enable or disable application debugging
-  debug: true
+COMMON: &common
+  DEBUG: False
 
-  earth_engine_api:
+  CACHE:
+    TYPE: 'filesystem'
+    DIRECTORY: 'data/cache'
+
+  # example: `mysql://user:someuserpassword@localhost/app_db`
+  SQLALCHEMY_DATABASE_URI: '<db_vendor>://<username>:<password>@<db_hostname>/<db_name>'
+
+  EARTH_ENGINE_API:
     # service email address used in communicating with the Earth Engine API
-    account: ''
+    ACCOUNT: ''
 
     # path to the private key file
-    private_key: ''
+    PRIVATE_KEY: ''
 
     # secret password provided by the key generation tool
-    key_secret: ''
+    KEY_SECRET: ''
 
     # array of scopes used to interact with the Earth Engine API
-    scopes: []
+    SCOPES: []
+
+DEVELOPMENT: &development
+  <<: *common
+  DEBUG: True
+
+# PRODUCTION: &production
+#   <<: *common
 
 

@@ -105,5 +105,6 @@ ENV/
 # Project Exclusion
 conf/main.yml
 conf/creds
+data
 
 
