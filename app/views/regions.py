@@ -27,6 +27,7 @@ def index():
   return jsonify(response)
 
 @mod.route('/<region_id>', methods=['GET'])
+@cross_origin()
 def by_id(region_id):
   region = Region.query.get(region_id)
 
@@ -45,6 +46,7 @@ def by_id(region_id):
   return jsonify(response)
 
 @mod.route('/<region_id>/provinces', methods=['GET'])
+@cross_origin()
 def get_provinces(region_id):
   region = Region.query.get(region_id)
 
@@ -65,6 +67,7 @@ def get_provinces(region_id):
   return jsonify(response)
 
 @mod.route('/slug/<slug>', methods=['GET'])
+@cross_origin()
 def by_slug(slug):
   region = Region.query.filter_by(slug=slug).first()
 
@@ -83,6 +86,7 @@ def by_slug(slug):
   return jsonify(response)
 
 @mod.route('/slug/<slug>/provinces', methods=['GET'])
+@cross_origin()
 def get_provinces_by_region_slug(slug):
   region = Region.query.filter_by(slug=slug).first()
 

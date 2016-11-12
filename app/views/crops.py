@@ -27,6 +27,7 @@ def index():
   return jsonify(response)
 
 @mod.route('/<crop_id>', methods=['GET'])
+@cross_origin()
 def by_id(crop_id):
   crop = Crop.query.get(crop_id)
 
@@ -45,6 +46,7 @@ def by_id(crop_id):
   return jsonify(response)
 
 @mod.route('/slug/<slug>', methods=['GET'])
+@cross_origin()
 def by_slug(slug):
   crop = Crop.query.filter_by(slug=slug).first()
 
