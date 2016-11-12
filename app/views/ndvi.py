@@ -6,7 +6,7 @@
 
 import ee
 from datetime import datetime, timedelta
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify
 from flask_cors import cross_origin
 from app import EE_CREDENTIALS, cache
 
