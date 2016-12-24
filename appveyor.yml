@@ -44,7 +44,7 @@ before_test:
 # Post-install test scripts.
 test_script:
   - mkdir data
-  - mkdir data/cache
+  - mkdir data\cache
   - cp conf/main.ci.yml conf/main.yml
   - "%PYTHON%\\python.exe -m unittest discover"
 
