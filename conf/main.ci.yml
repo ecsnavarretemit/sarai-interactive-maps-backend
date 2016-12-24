@@ -9,7 +9,7 @@ COMMON: &common
     DIRECTORY: 'data/cache'
 
   # example: `mysql://user:someuserpassword@localhost/app_db`
-  SQLALCHEMY_DATABASE_URI: 'mysql://root@localhost/sarai_maps_test_db'
+  SQLALCHEMY_DATABASE_URI: 'mysql://root:password@localhost/sarai_maps_test_db'
 
   # disable warnings
   SQLALCHEMY_TRACK_MODIFICATIONS: False
@@ -44,7 +44,7 @@ TESTING: &testing
   <<: *common
   DEBUG: True
 
-  SQLALCHEMY_DATABASE_URI: 'mysql://root@localhost/sarai_maps_test_db'
+  SQLALCHEMY_DATABASE_URI: 'mysql://root:password@localhost/sarai_maps_test_db'
 
 PRODUCTION: &production
   <<: *common
@@ -54,6 +54,6 @@ PRODUCTION: &production
 
   JSONIFY_PRETTYPRINT_REGULAR: False
 
-  SQLALCHEMY_DATABASE_URI: 'mysql://root@localhost/sarai_maps_test_db'
+  SQLALCHEMY_DATABASE_URI: 'mysql://root:password@localhost/sarai_maps_test_db'
 
 
