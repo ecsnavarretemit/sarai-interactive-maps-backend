@@ -1,0 +1,39 @@
+language: python
+sudo: true
+cache: pip
+
+dist: trusty
+
+python:
+  - '2.7'
+
+services:
+  - mysql
+
+branches:
+  only:
+  - master
+  - develop
+
+before_install:
+  - mysql -e 'CREATE DATABASE sarai_maps_test_db;'
+  - echo "USE mysql;\nUPDATE user SET password=PASSWORD('Password12!') WHERE user='root';\nFLUSH PRIVILEGES;\n" | mysql -u root
+  - mkdir data
+  - mkdir data/cache
+  - cp conf/main.ci.yml conf/main.yml
+
+install: "pip install -r requirements.txt"
+
+script:
+ - python -m unittest discover
+
+notifications:
+  webhooks:
+    on_success: change  # options: [always|never|change] default: always
+    on_failure: always  # options: [always|never|change] default: always
+    on_start: false     # default: false
+
+  slack:
+    secure: dD4bYhCoy2lYIAlZIsHNieizlt12pq+ULze5mc7gGS+ISOdsw6fPIk9N3Rf8jrDz0wlyB3jeunVGA4eE3tHKtX8Wloi0vP4elhwdGUE91EpkDi87sKxgWm8Fd+njCveqVZ4UKcoa5TL+M9C+2u3nCcf0icHIGZF9MXusPk/1w4k17QWzPW5YNQhbYnLMgiTz7rZgSIDlUWrsOR60W31GZGjXnwV5OOHecdmkAFkslg47fnK9Xz+aIMcy1kN1ekSaLGL127rWhNjVcRtGUtBwzulB5f3JJ357Do2tlJPTFp5Z0/vd7BRtmjIlqrib+xH8oLebcTtHinXhPRGh8Q50QsXTUa5FHm12hqlNEYXDAvSRIVh+/rOGcTa90p8TSSpxCsOoeEKg4hH17iC7H1yalHieUfYxldjHSB6PVL79dAPhl1PCru3lVAoxm8UD+v9LwWKwr4hbqVfBcLObzDkhlR5wfrcm4wZsyP1ERoS6RNxtQV7yjZLJVHe4x4Qk4PZYudhgnnR/HSfLd2JCkmSJVu6vdsNofcsDNxAGz6XHaothdP6L0h7QisDDhQBOvkJ72WlD6W9gp4ScjL9Agu1ViV41eFeB+0P5XfqNXUoAAn3GUkyVsEjQCy0v4Bid3quzKbuSoKkkCKvYOQxzeMAzgtp4NGyZTTmRYVdb7Ycoqrc=
+
+
