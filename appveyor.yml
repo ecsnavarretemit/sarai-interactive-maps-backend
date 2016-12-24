@@ -30,7 +30,7 @@ install:
   - "%PYTHON%\\python.exe -m pip install MySQL_python-1.2.5-cp27-none-win_amd64.whl"
 
 before_test:
-  - ps: >-
+- ps: >-
     $env:MYSQL_PWD="Password12!"
 
     $cmd = '"C:\Program Files\MySql\MySQL Server 5.7\bin\mysql" -e "CREATE DATABASE sarai_maps_test_db;" --user=root'
