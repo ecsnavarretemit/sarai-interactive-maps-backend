@@ -12,6 +12,11 @@ branches:
   - master
   - develop
 
+before_install:
+  - mkdir data
+  - mkdir data/cache
+  - cp conf/main.ci.yml conf/main.yml
+
 install: "pip install -r requirements.txt"
 
 script:
