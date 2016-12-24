@@ -7,12 +7,16 @@ dist: trusty
 python:
   - '2.7'
 
+services:
+  - mysql
+
 branches:
   only:
   - master
   - develop
 
 before_install:
+  - mysql -e 'CREATE DATABASE sarai_maps_test_db;'
   - mkdir data
   - mkdir data/cache
   - cp conf/main.ci.yml conf/main.yml
