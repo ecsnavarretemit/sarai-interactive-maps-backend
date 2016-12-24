@@ -26,16 +26,17 @@ install:
   # We need wheel installed to build wheels
   - "%PYTHON%\\python.exe -m pip install wheel"
   - "%PYTHON%\\python.exe -m pip install -r requirements_ci.txt"
-  - wget http://www.lfd.uci.edu/~gohlke/pythonlibs/f9r7rmd8/MySQL_python-1.2.5-cp27-none-win_amd64.whl -OutFile MySQL_python-1.2.5-cp27-none-win_amd64.whl
-  - "%PYTHON%\\python.exe -m pip install MySQL_python-1.2.5-cp27-none-win_amd64.whl"
 
 before_test:
-- ps: >-
+  - ps: >-
     $env:MYSQL_PWD="Password12!"
 
     $cmd = '"C:\Program Files\MySql\MySQL Server 5.7\bin\mysql" -e "CREATE DATABASE sarai_maps_test_db;" --user=root'
 
     iex "& $cmd"
+  - ps: >-
+    Invoke-WebRequest http://www.lfd.uci.edu/~gohlke/pythonlibs/f9r7rmd8/MySQL_python-1.2.5-cp27-none-win_amd64.whl -OutFile MySQL_python-1.2.5-cp27-none-win_amd64.whl
+  - "%PYTHON%\\python.exe -m pip install MySQL_python-1.2.5-cp27-none-win_amd64.whl"
 
 # Post-install test scripts.
 test_script:
