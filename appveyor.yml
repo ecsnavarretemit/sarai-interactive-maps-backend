@@ -1,0 +1,57 @@
+environment:
+  matrix:
+    - PYTHON: "C:\\Python27"
+
+# # fail all the builds once any of the builds fail have failed
+# matrix:
+#   fast_finish: true
+
+# build only this branches
+branches:
+  only:
+  - master
+  - develop
+
+# Do not build tags
+skip_tags: true
+
+# Pull Requests do not increment build number
+pull_requests:
+  do_not_increment_build_number: true
+
+services:
+  - mysql
+
+install:
+  # We need wheel installed to build wheels
+  - "%PYTHON%\\python.exe -m pip install wheel"
+  - "%PYTHON%\\python.exe -m pip install -r requirements.txt"
+
+before_test:
+- ps: >-
+    $env:MYSQL_PWD="Password12!"
+
+    $cmd = '"C:\Program Files\MySql\MySQL Server 5.7\bin\mysql" -e "CREATE DATABASE sarai_maps_test_db;" --user=root'
+
+    iex "& $cmd"
+
+# Post-install test scripts.
+test_script:
+  - mkdir data
+  - mkdir data/cache
+  - cp conf/main.ci.yml conf/main.yml
+  - "%PYTHON%\\python.exe -m unittest discover"
+
+notifications:
+  - provider: Slack
+    incoming_webhook:
+      secure: VdxswwiTtaiyE19P7KmTmieabxX5oVrZLPOv7HKkS0e8AVEUe2Fj1zzumdhorbPafhUMuha6eRDs9TreH2zHRQk4AWTtLvOyHHqAi1yUiVM=
+    channel: '#interactve-maps-build'
+    on_build_success: true
+    on_build_failure: true
+    on_build_status_changed: true
+
+# Don't actually build.
+build: off
+
+
