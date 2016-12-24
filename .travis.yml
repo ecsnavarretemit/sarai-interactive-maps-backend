@@ -17,7 +17,7 @@ branches:
 
 before_install:
   - mysql -e 'CREATE DATABASE sarai_maps_test_db;'
-  - echo "USE mysql;\nUPDATE user SET password=PASSWORD('password') WHERE user='root';\nFLUSH PRIVILEGES;\n" | mysql -u root
+  - echo "USE mysql;\nUPDATE user SET password=PASSWORD('Password12!') WHERE user='root';\nFLUSH PRIVILEGES;\n" | mysql -u root
   - mkdir data
   - mkdir data/cache
   - cp conf/main.ci.yml conf/main.yml
