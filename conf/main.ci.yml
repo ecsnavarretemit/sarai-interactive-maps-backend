@@ -1,0 +1,59 @@
+COMMON: &common
+  DEBUG: False
+
+  HOST: '127.0.0.1'
+  PORT: 3100
+
+  CACHE:
+    TYPE: 'filesystem'
+    DIRECTORY: 'data/cache'
+
+  # example: `mysql://user:someuserpassword@localhost/app_db`
+  SQLALCHEMY_DATABASE_URI: 'mysql://root@localhost/sarai_maps_test_db'
+
+  # disable warnings
+  SQLALCHEMY_TRACK_MODIFICATIONS: False
+
+  EARTH_ENGINE_API:
+    # service email address used in communicating with the Earth Engine API
+    ACCOUNT: ''
+
+    # path to the private key file
+    PRIVATE_KEY: ''
+
+    # secret password provided by the key generation tool
+    KEY_SECRET: ''
+
+    # array of scopes used to interact with the Earth Engine API
+    SCOPES: []
+
+  GOOGLE_API:
+    API_KEY: ''
+    FUSION_TABLES_SQL_ENDPOINT: ''
+
+  NDVI:
+    LOCATION_METADATA_FUSION_TABLE: ''
+    LOCATION_FUSION_TABLE_COLUMN: ''
+
+
+DEVELOPMENT: &development
+  <<: *common
+  DEBUG: True
+
+TESTING: &testing
+  <<: *common
+  DEBUG: True
+
+  SQLALCHEMY_DATABASE_URI: 'mysql://root@localhost/sarai_maps_test_db'
+
+PRODUCTION: &production
+  <<: *common
+
+  HOST: '0.0.0.0'
+  PORT: 3200
+
+  JSONIFY_PRETTYPRINT_REGULAR: False
+
+  SQLALCHEMY_DATABASE_URI: 'mysql://root@localhost/sarai_maps_test_db'
+
+
