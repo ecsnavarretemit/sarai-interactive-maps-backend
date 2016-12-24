@@ -1,5 +1,7 @@
 # SARAI Maps Backend
 
+[![Build Status](https://travis-ci.org/ecsnavarretemit/sarai-interactive-maps-backend.svg?branch=master)](https://travis-ci.org/ecsnavarretemit/sarai-interactive-maps-backend)
+
 ## Installation of Requirements
 
 ### All Operating Systems
