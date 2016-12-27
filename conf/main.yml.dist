@@ -28,7 +28,7 @@ COMMON: &common
     API_KEY: ''
     FUSION_TABLES_SQL_ENDPOINT: 'https://www.googleapis.com/fusiontables/v1/query'
 
-  NDVI:
+  PROVINCES_FT:
     LOCATION_METADATA_FUSION_TABLE: ''
     LOCATION_FUSION_TABLE_COLUMN: ''
 
