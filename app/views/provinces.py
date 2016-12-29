@@ -75,9 +75,11 @@ def by_slug(slug):
 def get_places():
   ndvi_config = app.config['PROVINCES_FT']
 
+  normalized_columns = ', '.join([str(col) for col in ndvi_config['LOCATION_FUSION_TABLE_COLUMN']])
+
   api_key = app.config['GOOGLE_API']['API_KEY']
   query = "SELECT %s from %s" % (
-    ndvi_config['LOCATION_FUSION_TABLE_COLUMN'],
+    normalized_columns,
     ndvi_config['LOCATION_METADATA_FUSION_TABLE']
   )
 
@@ -89,16 +91,17 @@ def get_places():
   # transform json string into Python data
   json_object = json.loads(response.text)
 
-  # since Google returns nested array we flatten those arrays into one array
-  places = list(itertools.chain.from_iterable(json_object['rows']))
-
-  # sort the places alphabetically
-  places.sort()
+  collection = []
+  for place_data in json_object['rows']:
+    collection.append({
+      'name': place_data[0],
+      'center': place_data[1]['geometry']
+    })
 
   # assemble the resulting response
   result = {
     'success': True,
-    'places': places
+    'places': sorted(collection, key=lambda x: str(x['name']), reverse=False)
   }
 
   return jsonify(**result)
