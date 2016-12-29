@@ -25,7 +25,10 @@ def ndvi_clipper(image):
 
   place = request.args.get('place')
 
-  return image.clip(province.filter(ee.Filter.eq(app.config['PROVINCES_FT']['LOCATION_FUSION_TABLE_COLUMN'], place)).geometry())
+  return image.clip(
+    province.filter(ee.Filter.eq(app.config['PROVINCES_FT']['LOCATION_FUSION_TABLE_NAME_COLUMN'], place))
+    .geometry()
+  )
 
 def ndvi_cache_key(*args, **kwargs):
   path = request.path
