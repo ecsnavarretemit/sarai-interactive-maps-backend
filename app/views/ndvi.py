@@ -20,12 +20,12 @@ def ndvi_mapper(image):
   return image.select().addBands(image.normalizedDifference(['B8', 'B4'])).updateMask(mask)
 
 def ndvi_clipper(image):
-  ft = "ft:%s" % app.config['NDVI']['LOCATION_METADATA_FUSION_TABLE']
+  ft = "ft:%s" % app.config['PROVINCES_FT']['LOCATION_METADATA_FUSION_TABLE']
   province = ee.FeatureCollection(ft)
 
   place = request.args.get('place')
 
-  return image.clip(province.filter(ee.Filter.eq(app.config['NDVI']['LOCATION_FUSION_TABLE_COLUMN'], place)).geometry())
+  return image.clip(province.filter(ee.Filter.eq(app.config['PROVINCES_FT']['LOCATION_FUSION_TABLE_COLUMN'], place)).geometry())
 
 def ndvi_cache_key(*args, **kwargs):
   path = request.path
