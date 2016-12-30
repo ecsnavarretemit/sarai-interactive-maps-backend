@@ -75,7 +75,7 @@ def by_slug(slug):
 def get_places():
   ndvi_config = app.config['PROVINCES_FT']
 
-  normalized_columns = ', '.join([str(col) for col in ndvi_config['LOCATION_FUSION_TABLE_COLUMN']])
+  normalized_columns = ', '.join([str(col) for col in ndvi_config['LOCATION_FUSION_TABLE_QUERY_COLUMN']])
 
   api_key = app.config['GOOGLE_API']['API_KEY']
   query = "SELECT %s from %s" % (
