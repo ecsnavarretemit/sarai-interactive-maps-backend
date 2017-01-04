@@ -5,7 +5,7 @@
 # Version 1.0.0-alpha5
 
 import ee
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, abort
 from flask_cors import cross_origin
 from app import EE_CREDENTIALS, cache
 
@@ -58,9 +58,7 @@ def index(date_filter):
       'mapToken': map_token
     }
   except ee.ee_exception.EEException:
-    result = {
-      'success': False
-    }
+    abort(404, 'Rainfall data not found.')
 
   return jsonify(**result)
 
