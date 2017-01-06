@@ -7,7 +7,6 @@
 import json
 import urllib
 import requests
-import itertools
 from flask import Blueprint, jsonify, abort
 from flask_cors import cross_origin
 from app.gzipped import gzipped
