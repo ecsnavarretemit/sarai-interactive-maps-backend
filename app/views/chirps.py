@@ -8,12 +8,14 @@ import ee
 from flask import Blueprint, jsonify, abort
 from flask_cors import cross_origin
 from app import EE_CREDENTIALS, cache
+from app.gzipped import gzipped
 
 mod = Blueprint('chirps', __name__, url_prefix='/chirps')
 
 # cache the result of this endpoint for 12 hours
 @mod.route('/<date_filter>', methods=['GET'])
 @cross_origin()
+@gzipped
 @cache.memoize(43200)
 def index(date_filter):
   ee.Initialize(EE_CREDENTIALS)

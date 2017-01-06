@@ -8,6 +8,7 @@ import ee
 from datetime import datetime, timedelta
 from flask import Blueprint, jsonify, request
 from flask_cors import cross_origin
+from app.gzipped import gzipped
 from app import EE_CREDENTIALS, cache, app
 
 mod = Blueprint('ndvi', __name__, url_prefix='/ndvi')
@@ -38,6 +39,7 @@ def ndvi_cache_key(*args, **kwargs):
 # cache the result of this endpoint for 12 hours
 @mod.route('/<start_date>/<number_of_days>', methods=['GET'])
 @cross_origin()
+@gzipped
 @cache.cached(timeout=43200, key_prefix=ndvi_cache_key)
 def date_and_range(start_date, number_of_days):
   date_format_str = "%Y-%m-%d"
