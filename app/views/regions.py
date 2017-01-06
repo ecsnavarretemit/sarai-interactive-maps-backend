@@ -2,16 +2,18 @@
 #
 # Copyright(c) Exequiel Ceasar Navarrete <esnavarrete1@up.edu.ph>
 # Licensed under MIT
-# Version 1.0.0-alpha5
+# Version 1.0.0-alpha6
 
 from flask import Blueprint, jsonify, abort
 from flask_cors import cross_origin
+from app.gzipped import gzipped
 from app.models import Region
 from app.schema import RegionSchema, ProvinceSchema
 
 mod = Blueprint('regions', __name__, url_prefix='/regions')
 
 @mod.route('/', methods=['GET'])
+@gzipped
 @cross_origin()
 def index():
   regions = Region.query.all()
@@ -27,6 +29,7 @@ def index():
   return jsonify(response)
 
 @mod.route('/<region_id>', methods=['GET'])
+@gzipped
 @cross_origin()
 def by_id(region_id):
   region = Region.query.get(region_id)
@@ -46,6 +49,7 @@ def by_id(region_id):
   return jsonify(response)
 
 @mod.route('/<region_id>/provinces', methods=['GET'])
+@gzipped
 @cross_origin()
 def get_provinces(region_id):
   region = Region.query.get(region_id)
@@ -67,6 +71,7 @@ def get_provinces(region_id):
   return jsonify(response)
 
 @mod.route('/slug/<slug>', methods=['GET'])
+@gzipped
 @cross_origin()
 def by_slug(slug):
   region = Region.query.filter_by(slug=slug).first()
@@ -86,6 +91,7 @@ def by_slug(slug):
   return jsonify(response)
 
 @mod.route('/slug/<slug>/provinces', methods=['GET'])
+@gzipped
 @cross_origin()
 def get_provinces_by_region_slug(slug):
   region = Region.query.filter_by(slug=slug).first()

@@ -2,16 +2,13 @@
 #
 # Copyright(c) Exequiel Ceasar Navarrete <esnavarrete1@up.edu.ph>
 # Licensed under MIT
-# Version 1.0.0-alpha5
+# Version 1.0.0-alpha6
 
 import ee
-import requests
-import json
-import itertools
-import urllib
 from datetime import datetime, timedelta
 from flask import Blueprint, jsonify, request
 from flask_cors import cross_origin
+from app.gzipped import gzipped
 from app import EE_CREDENTIALS, cache, app
 
 mod = Blueprint('ndvi', __name__, url_prefix='/ndvi')
@@ -24,55 +21,25 @@ def ndvi_mapper(image):
   return image.select().addBands(image.normalizedDifference(['B8', 'B4'])).updateMask(mask)
 
 def ndvi_clipper(image):
-  ft = "ft:%s" % app.config['NDVI']['LOCATION_METADATA_FUSION_TABLE']
+  ft = "ft:%s" % app.config['PROVINCES_FT']['LOCATION_METADATA_FUSION_TABLE']
   province = ee.FeatureCollection(ft)
 
   place = request.args.get('place')
 
-  return image.clip(province.filter(ee.Filter.eq(app.config['NDVI']['LOCATION_FUSION_TABLE_COLUMN'], place)).geometry())
+  return image.clip(
+    province.filter(ee.Filter.eq(app.config['PROVINCES_FT']['LOCATION_FUSION_TABLE_NAME_COLUMN'], place))
+    .geometry()
+  )
 
 def ndvi_cache_key(*args, **kwargs):
   path = request.path
   args = str(hash(frozenset(request.args.items())))
   return (path + args).encode('utf-8')
 
-@mod.route('/places', methods=['GET'])
-@cross_origin()
-@cache.cached(timeout=604800)
-def get_places():
-  ndvi_config = app.config['NDVI']
-
-  api_key = app.config['GOOGLE_API']['API_KEY']
-  query = "SELECT %s from %s" % (
-    ndvi_config['LOCATION_FUSION_TABLE_COLUMN'],
-    ndvi_config['LOCATION_METADATA_FUSION_TABLE']
-  )
-
-  query_params = {'sql': query, 'key': api_key}
-  endpoint = app.config['GOOGLE_API']['FUSION_TABLES_SQL_ENDPOINT'] + "?" + urllib.urlencode(query_params)
-
-  response = requests.get(endpoint)
-
-  # transform json string into Python data
-  json_object = json.loads(response.text)
-
-  # since Google returns nested array we flatten those arrays into one array
-  places = list(itertools.chain.from_iterable(json_object['rows']))
-
-  # sort the places alphabetically
-  places.sort()
-
-  # assemble the resulting response
-  result = {
-    'success': True,
-    'places': places
-  }
-
-  return jsonify(**result)
-
 # cache the result of this endpoint for 12 hours
 @mod.route('/<start_date>/<number_of_days>', methods=['GET'])
 @cross_origin()
+@gzipped
 @cache.cached(timeout=43200, key_prefix=ndvi_cache_key)
 def date_and_range(start_date, number_of_days):
   date_format_str = "%Y-%m-%d"

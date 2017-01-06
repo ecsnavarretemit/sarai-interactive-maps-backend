@@ -2,7 +2,7 @@
 #
 # Copyright(c) Exequiel Ceasar Navarrete <esnavarrete1@up.edu.ph>
 # Licensed under MIT
-# Version 1.0.0-alpha5
+# Version 1.0.0-alpha6
 
 import os
 import sys
@@ -11,6 +11,7 @@ from flask_environments import Environments
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_caching import Cache
+from flask_cors import cross_origin
 from oauth2client.service_account import ServiceAccountCredentials
 
 # instantiate the application
@@ -27,6 +28,7 @@ cache = Cache(app, config={
 })
 
 @app.errorhandler(404)
+@cross_origin()
 def page_not_found(e):
   return jsonify(error=404, text=str(e.description), success=False)
 
