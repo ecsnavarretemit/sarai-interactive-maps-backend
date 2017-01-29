@@ -4,9 +4,14 @@
 # Licensed under MIT
 # Version 1.0.0-alpha6
 
+import os
 import ee
+import csv
+import json
+import requests
+from slugify import slugify
 from datetime import datetime, timedelta
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, abort
 from flask_cors import cross_origin
 from app.gzipped import gzipped
 from app import EE_CREDENTIALS, cache, app
@@ -89,5 +94,51 @@ def date_and_range(start_date, number_of_days):
   }
 
   return jsonify(**result)
+
+@mod.route('/time-series/<lat>/<lng>/<start_date>/<end_date>', methods=['GET'])
+@cross_origin()
+@gzipped
+@cache.cached(timeout=43200, key_prefix=ndvi_cache_key)
+def time_series(lat, lng, start_date, end_date):
+  ee.Initialize(EE_CREDENTIALS)
+
+  # create a geometry point instance for cropping data later
+  point = ee.Geometry.Point(float(lng), float(lat))
+
+  # use the MODIS satellite data (NDVI)
+  modis = ee.ImageCollection('MODIS/MOD13Q1').select('NDVI')
+
+  # check first if the resulting date filter yields greater than 0 features
+  filtering_result = modis.filterDate(start_date, end_date)
+
+  if len(filtering_result.getInfo()['features']) == 0:
+    abort(404, 'NDVI data not found')
+
+  result = filtering_result.getRegion(point, 250).getInfo()
+  result.pop(0)
+
+  def mapper(item):
+    prefix = 'MOD13Q1_005_'
+    prefixed_date = str(item[0])
+    date = ''
+
+    result = prefixed_date.startswith(prefix)
+
+    if result is True:
+      date = prefixed_date[len(prefix):].replace('_', '-')
+
+    return {
+      'time': date,
+      'ndvi': item[4]
+    }
+
+  mapped = map(mapper, result)
+
+  json_result = {
+    'success': True,
+    'result': mapped
+  }
+
+  return jsonify(**json_result)
 
 
