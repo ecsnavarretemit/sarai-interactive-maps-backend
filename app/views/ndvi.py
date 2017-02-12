@@ -42,17 +42,11 @@ def ndvi_cache_key(*args, **kwargs):
   return (path + args).encode('utf-8')
 
 # cache the result of this endpoint for 12 hours
-@mod.route('/<start_date>/<number_of_days>', methods=['GET'])
+@mod.route('/<start_date>/<end_date>', methods=['GET'])
 @cross_origin()
 @gzipped
 @cache.cached(timeout=43200, key_prefix=ndvi_cache_key)
-def date_and_range(start_date, number_of_days):
-  date_format_str = "%Y-%m-%d"
-  start_date_obj = datetime.strptime(start_date, date_format_str)
-
-  end_date_obj = start_date_obj + timedelta(int(number_of_days))
-  end_date = end_date_obj.strftime(date_format_str)
-
+def date_and_range(start_date, end_date):
   ee.Initialize(EE_CREDENTIALS)
 
   geometric_bounds = ee.List([
