@@ -37,11 +37,9 @@ before_test:
 - ps: >-
     $fileName = 'MySQL_python-1.2.5-cp27-none-win32.whl' -replace '(#|\||"|,|/|:|â|€|™|\?)', ''
 
-    $filePath = Join-Path 'C:\projects\sarai-interactive-maps-backend' $fileName
+    $filePath = Join-Path $env:APPVEYOR_BUILD_FOLDER $fileName
 
     $url = 'http://www.lfd.uci.edu/~gohlke/pythonlibs/dn4ksi39/MySQL_python-1.2.5-cp27-none-win32.whl'
-
-    Write-Host $env:APPVEYOR_BUILD_FOLDER -ForegroundColor Yellow
 
     if (Test-Path($filePath))
     {
@@ -54,7 +52,7 @@ before_test:
     Invoke-WebRequest $url -OutFile $filePath
 
 # install the wheel
-- "%PYTHON%\\python.exe -m pip install C:\\projects\\sarai-interactive-maps-backend\\MySQL_python-1.2.5-cp27-none-win32.whl"
+- "%PYTHON%\\python.exe -m pip install %APPVEYOR_BUILD_FOLDER%\\MySQL_python-1.2.5-cp27-none-win32.whl"
 
 # Create database
 - ps: >-
