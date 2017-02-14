@@ -12,6 +12,13 @@ from app.gzipped import gzipped
 
 mod = Blueprint('chirps', __name__, url_prefix='/chirps')
 
+def accumulate(image, ee_list):
+  previous = ee.Image(ee.List(ee_list).get(-1))
+
+  added = image.add(previous).set('system:time_start', image.get('system:time_start'))
+
+  return ee.List(ee_list).add(added)
+
 # cache the result of this endpoint for 12 hours
 @mod.route('/<date_filter>', methods=['GET'])
 @cross_origin()
@@ -63,5 +70,31 @@ def index(date_filter):
     abort(404, 'Rainfall data not found.')
 
   return jsonify(**result)
+
+# cache the result of this endpoint for 12 hours
+@mod.route('/cumulative-rainfall/<lat>/<lng>/<start_date>/<end_date>', methods=['GET'])
+@cross_origin()
+# @gzipped
+# @cache.memoize(43200)
+def cumulative_rainfall(lat, lng, start_date, end_date):
+  ee.Initialize(EE_CREDENTIALS)
+
+  # create a geometry point instance for cropping data later
+  point = ee.Geometry.Point(float(lng), float(lat))
+
+  image_collection = ee.ImageCollection('UCSB-CHG/CHIRPS/PENTAD')
+  filtered = image_collection.filterDate(start_date, end_date)
+
+  time0 = filtered.first().get('system:time_start')
+  first = ee.List([
+    ee.Image(0).set('system:time_start', time0).select([0], ['precipitation'])
+  ])
+
+  cumulative = ee.ImageCollection(ee.List(filtered.iterate(accumulate, first)))
+
+  result = cumulative.getRegion(point, 500).getInfo()
+  print result
+
+  return "shit"
 
 
