@@ -52,6 +52,8 @@ before_test:
 
     Invoke-WebRequest $url -OutFile $filePath
 
+    Write-Host 'Done downloading wheel file.' -ForegroundColor Green
+
 # install the wheel
 - "%PYTHON%\\python.exe -m pip install %APPVEYOR_BUILD_FOLDER%\\MySQL_python-1.2.5-cp27-none-win32.whl"
 
@@ -62,6 +64,8 @@ before_test:
     Write-Host 'Creating test database.' -ForegroundColor Green
 
     $cmd = '"C:\Program Files\MySql\MySQL Server 5.7\bin\mysql" -e "CREATE DATABASE sarai_maps_test_db;" --user=root'
+
+    Write-Host 'Done creating test database.' -ForegroundColor Green
 
     iex "& $cmd"
 
