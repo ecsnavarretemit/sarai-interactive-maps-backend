@@ -31,6 +31,7 @@ install:
 
 cache:
   - MySQL_python-1.2.5-cp27-none-win32.whl # cache the downloaded wheel to prevent any errors when the link expires
+  - '%LOCALAPPDATA%\pip\Cache\wheels' # cache python wheels
 
 before_test:
 # use alternate source of mysql-python since compiling it will make builds fail
