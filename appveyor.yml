@@ -41,7 +41,7 @@ before_test:
 
     $url = 'http://www.lfd.uci.edu/~gohlke/pythonlibs/dn4ksi39/MySQL_python-1.2.5-cp27-none-win32.whl'
 
-    WriteHost $env:APPVEYOR_BUILD_FOLDER -ForegroundColor Yellow
+    Write-Host $env:APPVEYOR_BUILD_FOLDER -ForegroundColor Yellow
 
     if (Test-Path($filePath))
     {
