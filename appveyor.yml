@@ -46,6 +46,7 @@ before_test:
 
 - ps: >-
     $fileName = 'MySQL_python-1.2.5-cp27-none-win32.whl' -replace '(-|#|\||"|,|/|:|â|€|™|\?)', ''
+
     $filePath = Join-Path 'C:\projects\sarai-interactive-maps-backend' $fileName
 
     if (Test-Path($filePath))
