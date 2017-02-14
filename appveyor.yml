@@ -59,7 +59,7 @@ before_test:
 
     Invoke-WebRequest $url -OutFile $filePath
 
-- "%PYTHON%\\python.exe -m pip install C:\projects\sarai-interactive-maps-backend\MySQL_python-1.2.5-cp27-none-win32.whl"
+- "%PYTHON%\\python.exe -m pip install C:\\projects\\sarai-interactive-maps-backend\\MySQL_python-1.2.5-cp27-none-win32.whl"
 
 # Post-install test scripts.
 test_script:
