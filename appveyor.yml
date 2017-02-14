@@ -30,8 +30,10 @@ install:
   - "%PYTHON%\\python.exe -m pip install -r requirements_ci.txt"
 
   # use alternate source of mysql-python since compiling it will make builds fail
-  - powershell -command "& {&'Invoke-WebRequest' http://www.lfd.uci.edu/~gohlke/pythonlibs/f9r7rmd8/MySQL_python-1.2.5-cp27-none-win32.whl -OutFile MySQL_python-1.2.5-cp27-none-win32.whl}"
+  - powershell -command "& {&'Invoke-WebRequest' http://www.lfd.uci.edu/~gohlke/pythonlibs/dn4ksi39/MySQL_python-1.2.5-cp27-none-win32.whl -OutFile MySQL_python-1.2.5-cp27-none-win32.whl}"
   - "%PYTHON%\\python.exe -m pip install MySQL_python-1.2.5-cp27-none-win32.whl"
+
+  - dir /s /b /o:gn
 
 before_test:
 - ps: >-
