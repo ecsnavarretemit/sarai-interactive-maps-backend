@@ -49,6 +49,8 @@ before_test:
 
     $filePath = Join-Path 'C:\projects\sarai-interactive-maps-backend' $fileName
 
+    $url = 'http://www.lfd.uci.edu/~gohlke/pythonlibs/dn4ksi39/MySQL_python-1.2.5-cp27-none-win32.whl'
+
     if (Test-Path($filePath))
     {
         Write-Host 'Skipping file, already downloaded' -ForegroundColor Yellow
