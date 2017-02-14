@@ -33,13 +33,6 @@ cache:
   - MySQL_python-1.2.5-cp27-none-win32.whl # cache the downloaded wheel to prevent any errors when the link expires
 
 before_test:
-- ps: >-
-    $env:MYSQL_PWD="Password12!"
-
-    $cmd = '"C:\Program Files\MySql\MySQL Server 5.7\bin\mysql" -e "CREATE DATABASE sarai_maps_test_db;" --user=root'
-
-    iex "& $cmd"
-
 # use alternate source of mysql-python since compiling it will make builds fail
 - ps: >-
     $fileName = 'MySQL_python-1.2.5-cp27-none-win32.whl' -replace '(#|\||"|,|/|:|â|€|™|\?)', ''
@@ -50,14 +43,26 @@ before_test:
 
     if (Test-Path($filePath))
     {
-        Write-Host 'Skipping file, already downloaded' -ForegroundColor Yellow
+        Write-Host 'Skipping file, already downloaded!' -ForegroundColor Yellow
         return
     }
+
+    Write-Host 'Downloading wheel file.' -ForegroundColor Green
 
     Invoke-WebRequest $url -OutFile $filePath
 
 # install the wheel
 - "%PYTHON%\\python.exe -m pip install C:\\projects\\sarai-interactive-maps-backend\\MySQL_python-1.2.5-cp27-none-win32.whl"
+
+# Create database
+- ps: >-
+    $env:MYSQL_PWD="Password12!"
+
+    Write-Host 'Creating test database.' -ForegroundColor Green
+
+    $cmd = '"C:\Program Files\MySql\MySQL Server 5.7\bin\mysql" -e "CREATE DATABASE sarai_maps_test_db;" --user=root'
+
+    iex "& $cmd"
 
 # Post-install test scripts.
 test_script:
