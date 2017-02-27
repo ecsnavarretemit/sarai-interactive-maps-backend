@@ -4,13 +4,7 @@
 # Licensed under MIT
 # Version 1.0.0-alpha6
 
-import os
 import ee
-import csv
-import json
-import requests
-from slugify import slugify
-from datetime import datetime, timedelta
 from flask import Blueprint, jsonify, request, abort
 from flask_cors import cross_origin
 from app.gzipped import gzipped
