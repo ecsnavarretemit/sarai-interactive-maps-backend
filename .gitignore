@@ -102,6 +102,10 @@ ENV/
 # Rope project settings
 .ropeproject
 
+# ctags
+tags
+.tags
+
 # Project Exclusion
 conf/main.yml
 conf/creds
