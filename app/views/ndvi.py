@@ -25,6 +25,25 @@ def ndvi_mapper(image):
 
   return image.select().addBands(image.normalizedDifference(['B8', 'B4'])).updateMask(mask)
 
+def time_series_mapper(item):
+  prefix = 'MOD13Q1_005_'
+  prefixed_date = str(item[0])
+  date = ''
+
+  result = prefixed_date.startswith(prefix)
+
+  if result is True:
+    date = prefixed_date[len(prefix):].replace('_', '-')
+
+  ndvi_value = float(item[4]) / 10000
+
+  print "full=%s, divided=%s" % (item[4], ndvi_value)
+
+  return {
+    'time': date,
+    'ndvi': ndvi_value
+  }
+
 def ndvi_clipper(image):
   ft = "ft:%s" % app.config['PROVINCES_FT']['LOCATION_METADATA_FUSION_TABLE']
   province = ee.FeatureCollection(ft)
@@ -111,22 +130,7 @@ def time_series(lat, lng, start_date, end_date):
   result = filtering_result.getRegion(point, 250).getInfo()
   result.pop(0)
 
-  def mapper(item):
-    prefix = 'MOD13Q1_005_'
-    prefixed_date = str(item[0])
-    date = ''
-
-    result = prefixed_date.startswith(prefix)
-
-    if result is True:
-      date = prefixed_date[len(prefix):].replace('_', '-')
-
-    return {
-      'time': date,
-      'ndvi': item[4]
-    }
-
-  mapped = map(mapper, result)
+  mapped = map(time_series_mapper, result)
 
   json_result = {
     'success': True,
