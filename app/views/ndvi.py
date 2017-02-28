@@ -31,8 +31,6 @@ def time_series_mapper(item):
 
   ndvi_value = float(item[4]) / 10000
 
-  print "full=%s, divided=%s" % (item[4], ndvi_value)
-
   return {
     'time': date,
     'ndvi': ndvi_value
