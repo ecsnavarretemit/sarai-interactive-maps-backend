@@ -5,6 +5,7 @@
 # Version 1.0.0-alpha6
 
 import ee
+import datetime
 from flask import Blueprint, jsonify, abort
 from flask_cors import cross_origin
 from app import EE_CREDENTIALS, cache
@@ -18,6 +19,15 @@ def accumulate(image, ee_list):
   added = image.add(previous).set('system:time_start', image.get('system:time_start'))
 
   return ee.List(ee_list).add(added)
+
+def cumulative_mapper(item):
+  timestamp = item[3] / 1000
+  rainfall = item[4]
+
+  return {
+    'time': datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S'),
+    'rainfall': rainfall
+  }
 
 # cache the result of this endpoint for 12 hours
 @mod.route('/<date_filter>', methods=['GET'])
@@ -83,18 +93,32 @@ def cumulative_rainfall(lat, lng, start_date, end_date):
   point = ee.Geometry.Point(float(lng), float(lat))
 
   image_collection = ee.ImageCollection('UCSB-CHG/CHIRPS/PENTAD')
-  filtered = image_collection.filterDate(start_date, end_date)
+  filtering_result = image_collection.filterDate(start_date, end_date)
 
-  time0 = filtered.first().get('system:time_start')
+  # check if there are features retrieved
+  if len(filtering_result.getInfo()['features']) == 0:
+    abort(404, 'Rainfall data not found')
+
+  time0 = filtering_result.first().get('system:time_start')
   first = ee.List([
     ee.Image(0).set('system:time_start', time0).select([0], ['precipitation'])
   ])
 
-  cumulative = ee.ImageCollection(ee.List(filtered.iterate(accumulate, first)))
+  cumulative = ee.ImageCollection(ee.List(filtering_result.iterate(accumulate, first)))
 
-  result = cumulative.getRegion(point, 500).getInfo()
-  print result
+  # precipitation should be casted to float or else
+  # it will throw error about incompatible types
+  result = cumulative.cast({'precipitation': 'float'}, ['precipitation']).getRegion(point, 500).getInfo()
+  result.pop(0)
 
-  return "shit"
+  # transform the data
+  mapped = map(cumulative_mapper, result)
+
+  json_result = {
+    'success': True,
+    'result': mapped
+  }
+
+  return jsonify(**json_result)
 
 
