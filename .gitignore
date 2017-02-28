@@ -1,5 +1,6 @@
 # IDE-generated files #
 nbproject
+.vscode
 
 # OS generated files #
 .DS_Store
