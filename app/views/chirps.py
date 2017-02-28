@@ -25,7 +25,7 @@ def cumulative_mapper(item):
   rainfall = item[4]
 
   return {
-    'time': datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S'),
+    'time': datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d'),
     'rainfall': rainfall
   }
 
