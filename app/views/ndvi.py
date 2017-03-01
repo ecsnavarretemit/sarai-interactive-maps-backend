@@ -20,7 +20,7 @@ def ndvi_mapper(image):
   data = hansen_image.select('datamask')
   mask = data.eq(1)
 
-  return image.select().addBands(image.normalizedDifference(['B8', 'B4'])).updateMask(mask)
+  return image.updateMask(mask)
 
 def time_series_mapper(item):
   prefix = 'MOD13Q1_005_'
@@ -131,21 +131,20 @@ def date_and_range(start_date, end_date):
 
   geometry = ee.Geometry.Polygon(geometric_bounds, 'EPSG:4326', True)
 
-  sentinel2 = ee.ImageCollection('COPERNICUS/S2')
-  sentinel2 = sentinel2.select(['B4', 'B8']).filterDate(start_date, end_date).filterBounds(geometry)
+  image_collection = ee.ImageCollection('LANDSAT/LC8_L1T')
+  filtered = image_collection.filterDate(start_date, end_date).filterBounds(geometry).map(ndvi_mapper)
+  ndvi = ee.Algorithms.Landsat.simpleComposite(filtered, 50, 10, 40, True).select('B7', 'B4', 'B3')
 
-  ndvi = sentinel2.map(ndvi_mapper)
-
-  visualization_styles = {
-    'min': 0,
-    'max': 1,
-    'palette': 'FFFFFF, CE7E45, FCD163, 66A000, 207401, 056201, 004C00, 023B01, 012E01, 011301'
+  map_parameters = {
+    'min': 0.05,
+    'max': 0.1,
+    'gamma': 1.6,
   }
 
   if request.args.get('place') is not None:
     ndvi = ndvi.map(ndvi_clipper)
 
-  map_object = ndvi.getMapId(visualization_styles)
+  map_object = ndvi.getMapId(map_parameters)
   map_id = map_object['mapid']
   map_token = map_object['token']
 
