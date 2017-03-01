@@ -30,11 +30,11 @@ def cumulative_mapper(item):
   }
 
 # cache the result of this endpoint for 12 hours
-@mod.route('/<date_filter>', methods=['GET'])
+@mod.route('/<start_date>/<end_date>', methods=['GET'])
 @cross_origin()
 @gzipped
 @cache.memoize(43200)
-def index(date_filter):
+def index(start_date, end_date):
   ee.Initialize(EE_CREDENTIALS)
 
   geometry = ee.Geometry.Polygon(
@@ -54,7 +54,7 @@ def index(date_filter):
 
   image_collection = ee.ImageCollection('UCSB-CHG/CHIRPS/PENTAD')
 
-  image = image_collection.filterDate(date_filter)
+  image = image_collection.filterDate(start_date, end_date)
   new_image = image.median().clip(geometry)
 
   try:
