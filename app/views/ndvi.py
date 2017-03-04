@@ -133,6 +133,11 @@ def date_and_range(start_date, end_date):
 
   image_collection = ee.ImageCollection('LANDSAT/LC8_L1T')
   filtered = image_collection.filterDate(start_date, end_date).filterBounds(geometry).map(ndvi_mapper)
+
+  # clip the image collection to a certain place only
+  if request.args.get('place') is not None:
+    filtered = filtered.map(ndvi_clipper)
+
   ndvi = ee.Algorithms.Landsat.simpleComposite(filtered, 50, 10, 40, True).select('B7', 'B4', 'B3')
 
   map_parameters = {
@@ -140,9 +145,6 @@ def date_and_range(start_date, end_date):
     'max': 0.1,
     'gamma': 1.6,
   }
-
-  if request.args.get('place') is not None:
-    ndvi = ndvi.map(ndvi_clipper)
 
   map_object = ndvi.getMapId(map_parameters)
   map_id = map_object['mapid']
