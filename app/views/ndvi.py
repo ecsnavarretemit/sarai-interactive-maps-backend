@@ -100,6 +100,9 @@ def date_and_range(start_date, end_date):
 
   return jsonify(**result)
 
+# NOTE: to export this, extract the querying code to another function
+# and use memoize to save the result of the query and create export function
+# and call the memoized function to this and the export function
 @mod.route('/time-series/<lat>/<lng>/<start_date>/<end_date>', methods=['GET'])
 @cross_origin()
 @gzipped
