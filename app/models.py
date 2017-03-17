@@ -6,6 +6,7 @@
 
 from app import db
 from slugify import slugify
+from geoalchemy2 import Geometry
 
 class Crop(db.Model):
   id = db.Column(db.Integer, primary_key=True)
@@ -62,5 +63,51 @@ class Province(db.Model):
 
   def __repr__(self):
     return '<Province %r>' % self.name
+
+class RegionalBorder(db.Model):
+  __tablename__ = 'ph_regional_borders'
+  id = db.Column('ogc_fid', db.Integer, primary_key=True)
+  geom = db.Column('wkb_geometry', Geometry(geometry_type='MULTIPOLYGON', srid=4326))
+  name = db.Column('region', db.String(254), unique=False)
+
+  def __init__(self, name, geom):
+    self.name = name
+    self.geom = geom
+
+  def __repr__(self):
+    return '<RegionalBorder %r>' % self.name
+
+class ProvincialBorder(db.Model):
+  __tablename__ = 'ph_provincial_borders'
+  id = db.Column('ogc_fid', db.Integer, primary_key=True)
+  geom = db.Column('wkb_geometry', Geometry(geometry_type='MULTIPOLYGON', srid=4326))
+  name = db.Column('province', db.String(254), unique=False)
+  region = db.Column('region', db.String(254), unique=False)
+
+  def __init__(self, name, geom, region):
+    self.name = name
+    self.geom = geom
+    self.region = region
+
+  def __repr__(self):
+    return '<ProvincialBorder %r>' % self.name
+
+class MunicipalBorder(db.Model):
+  __tablename__ = 'ph_municipal_borders'
+  id = db.Column('ogc_fid', db.Integer, primary_key=True)
+  geom = db.Column('wkb_geometry', Geometry(geometry_type='MULTIPOLYGON', srid=4326))
+  name = db.Column('name_2', db.String(75), unique=False)
+  province = db.Column('province', db.String(254), unique=False)
+  region = db.Column('region', db.String(254), unique=False)
+
+  def __init__(self, name, geom, region, province):
+    self.name = name
+    self.geom = geom
+    self.region = region
+    self.province = province
+
+  def __repr__(self):
+    return '<MunicipalBorder %r>' % self.name
+
 
 

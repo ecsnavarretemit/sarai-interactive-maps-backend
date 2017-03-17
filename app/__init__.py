@@ -50,7 +50,7 @@ else:
   EE_CREDENTIALS = 'not_available_on_testing'
 
 # Flask Views
-from app.views import regions, crops, provinces, ndvi, chirps
+from app.views import regions, crops, provinces, ndvi, chirps, ph_borders
 
 # Flask Blueprints
 app.register_blueprint(regions.mod)
@@ -58,6 +58,7 @@ app.register_blueprint(crops.mod)
 app.register_blueprint(provinces.mod)
 app.register_blueprint(ndvi.mod)
 app.register_blueprint(chirps.mod)
+app.register_blueprint(ph_borders.mod)
 
 @app.route("/")
 def main():
