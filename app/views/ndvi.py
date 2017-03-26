@@ -176,6 +176,10 @@ def time_series(lat, lng, start_date, end_date):
     # override the default output format
     output_format = requested_format
 
+  # abort the request if the query_result contains None value
+  if query_result is None:
+    abort(404, 'NDVI data not found')
+
   response = None
 
   if output_format == 'json':
@@ -221,6 +225,10 @@ def day_of_the_year(lat, lng, start_date, end_date):
 
     # override the default output format
     output_format = requested_format
+
+  # abort the request if the query_result contains None value
+  if query_result is None:
+    abort(404, 'NDVI data not found')
 
   response = None
 
