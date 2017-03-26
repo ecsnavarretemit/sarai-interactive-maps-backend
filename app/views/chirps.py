@@ -5,8 +5,10 @@
 # Version 1.0.0-alpha6
 
 import ee
-import datetime
-from flask import Blueprint, jsonify, abort
+import csv
+import StringIO
+from datetime import datetime
+from flask import Blueprint, jsonify, abort, request, make_response
 from flask_cors import cross_origin
 from app import EE_CREDENTIALS, cache
 from app.gzipped import gzipped
@@ -22,12 +24,63 @@ def accumulate(image, ee_list):
 
 def cumulative_mapper(item):
   timestamp = item[3] / 1000
-  rainfall = item[4]
+  rainfall_0p = item[4]
+  rainfall = item[5]
 
   return {
-    'time': datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d'),
+    'time': datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d'),
+    'rainfall_0p': rainfall_0p,
     'rainfall': rainfall
   }
+
+def query_cumulative_rainfall_data(lat, lng, start_date, end_date):
+  cache_key = 'rainfall_cum_rain_%s_%s_%s_%s' % (lat, lng, start_date, end_date)
+
+  final_result = cache.get(cache_key)
+
+  if final_result is None:
+    ee.Initialize(EE_CREDENTIALS)
+
+    # create a geometry point instance for cropping data later
+    point = ee.Geometry.Point(float(lng), float(lat))
+
+    image_collection = ee.ImageCollection('UCSB-CHG/CHIRPS/PENTAD')
+    filtering_result = image_collection.filterDate(start_date, end_date)
+
+    # check if there are features retrieved
+    if len(filtering_result.getInfo()['features']) == 0:
+      return None
+
+    time0 = filtering_result.first().get('system:time_start')
+    first = ee.List([
+      ee.Image(0).set('system:time_start', time0).select([0], ['precip'])
+    ])
+
+    cumulative = ee.ImageCollection(ee.List(filtering_result.iterate(accumulate, first)))
+
+    # precipitation should be casted to float or else
+    # it will throw error about incompatible types
+    result = cumulative.cast({'precipitation': 'float', 'precip': 'float'},
+                             ['precip', 'precipitation']).getRegion(point, 500).getInfo()
+
+    # remove the headers from the
+    result.pop(0)
+
+    # transform the data
+    final_result = map(cumulative_mapper, result)
+
+    # delete the first item if the rainfall_0p is not none
+    if final_result[0]['rainfall_0p'] is not None:
+      final_result.pop(0)
+
+    # remove the rainfall_0p
+    for item in final_result:
+      item.pop('rainfall_0p', None)
+
+    # cache it for 12 hours
+    cache.set(cache_key, final_result, timeout=43200)
+
+  return final_result
 
 # cache the result of this endpoint for 12 hours
 @mod.route('/<start_date>/<end_date>', methods=['GET'])
@@ -84,41 +137,52 @@ def index(start_date, end_date):
 # cache the result of this endpoint for 12 hours
 @mod.route('/cumulative-rainfall/<lat>/<lng>/<start_date>/<end_date>', methods=['GET'])
 @cross_origin()
-# @gzipped
-# @cache.memoize(43200)
+@gzipped
 def cumulative_rainfall(lat, lng, start_date, end_date):
-  ee.Initialize(EE_CREDENTIALS)
+  query_result = query_cumulative_rainfall_data(lat, lng, start_date, end_date)
+  output_format = 'json'
+  available_formats = ['json', 'csv']
+  requested_format = request.args.get('fmt')
 
-  # create a geometry point instance for cropping data later
-  point = ee.Geometry.Point(float(lng), float(lat))
+  if requested_format is not None:
+    # abort the request and throw HTTP 400 since the format
+    # is not on the list of available formats
+    if not requested_format in available_formats:
+      abort(400, 'Unsupported format')
 
-  image_collection = ee.ImageCollection('UCSB-CHG/CHIRPS/PENTAD')
-  filtering_result = image_collection.filterDate(start_date, end_date)
+    # override the default output format
+    output_format = requested_format
 
-  # check if there are features retrieved
-  if len(filtering_result.getInfo()['features']) == 0:
+  # abort the request if the query_result contains None value
+  if query_result is None:
     abort(404, 'Rainfall data not found')
 
-  time0 = filtering_result.first().get('system:time_start')
-  first = ee.List([
-    ee.Image(0).set('system:time_start', time0).select([0], ['precipitation'])
-  ])
+  response = None
 
-  cumulative = ee.ImageCollection(ee.List(filtering_result.iterate(accumulate, first)))
+  if output_format == 'json':
+    json_result = {
+      'success': True,
+      'result': query_result
+    }
 
-  # precipitation should be casted to float or else
-  # it will throw error about incompatible types
-  result = cumulative.cast({'precipitation': 'float'}, ['precipitation']).getRegion(point, 500).getInfo()
-  result.pop(0)
+    response = jsonify(**json_result)
+  else:
+    si = StringIO.StringIO()
+    cw = csv.writer(si)
 
-  # transform the data
-  mapped = map(cumulative_mapper, result)
+    cw.writerow(['Time', 'Precipitation'])
+    for value in query_result:
+      cw.writerow([
+        value['time'],
+        value['rainfall']
+      ])
 
-  json_result = {
-    'success': True,
-    'result': mapped
-  }
+    filename = 'cumulative-rainfall-%s-%s-%s-%s' % (lat, lng, start_date, end_date)
 
-  return jsonify(**json_result)
+    response = make_response(si.getvalue())
+    response.headers['Content-Disposition'] = 'attachment; filename=%s.csv' % filename
+    response.headers['Content-type'] = 'text/csv'
+
+  return response
 
 
