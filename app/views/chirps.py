@@ -29,6 +29,44 @@ def cumulative_mapper(item):
     'rainfall': rainfall
   }
 
+def query_cumulative_rainfall_data(lat, lng, start_date, end_date):
+  cache_key = 'rainfall_cum_rain_%s_%s_%s_%s' % (lat, lng, start_date, end_date)
+
+  final_result = cache.get(cache_key)
+
+  if final_result is None:
+    ee.Initialize(EE_CREDENTIALS)
+
+    # create a geometry point instance for cropping data later
+    point = ee.Geometry.Point(float(lng), float(lat))
+
+    image_collection = ee.ImageCollection('UCSB-CHG/CHIRPS/PENTAD')
+    filtering_result = image_collection.filterDate(start_date, end_date)
+
+    # check if there are features retrieved
+    if len(filtering_result.getInfo()['features']) == 0:
+      return None
+
+    time0 = filtering_result.first().get('system:time_start')
+    first = ee.List([
+      ee.Image(0).set('system:time_start', time0).select([0], ['precipitation'])
+    ])
+
+    cumulative = ee.ImageCollection(ee.List(filtering_result.iterate(accumulate, first)))
+
+    # precipitation should be casted to float or else
+    # it will throw error about incompatible types
+    result = cumulative.cast({'precipitation': 'float'}, ['precipitation']).getRegion(point, 500).getInfo()
+    result.pop(0)
+
+    # transform the data
+    final_result = map(cumulative_mapper, result)
+
+    # cache it for 12 hours
+    cache.set(cache_key, final_result, timeout=43200)
+
+  return final_result
+
 # cache the result of this endpoint for 12 hours
 @mod.route('/<start_date>/<end_date>', methods=['GET'])
 @cross_origin()
@@ -84,39 +122,17 @@ def index(start_date, end_date):
 # cache the result of this endpoint for 12 hours
 @mod.route('/cumulative-rainfall/<lat>/<lng>/<start_date>/<end_date>', methods=['GET'])
 @cross_origin()
-# @gzipped
-# @cache.memoize(43200)
+@gzipped
 def cumulative_rainfall(lat, lng, start_date, end_date):
-  ee.Initialize(EE_CREDENTIALS)
+  query_result = query_cumulative_rainfall_data(lat, lng, start_date, end_date)
 
-  # create a geometry point instance for cropping data later
-  point = ee.Geometry.Point(float(lng), float(lat))
-
-  image_collection = ee.ImageCollection('UCSB-CHG/CHIRPS/PENTAD')
-  filtering_result = image_collection.filterDate(start_date, end_date)
-
-  # check if there are features retrieved
-  if len(filtering_result.getInfo()['features']) == 0:
+  # abort the request if the query_result contains None value
+  if query_result is None:
     abort(404, 'Rainfall data not found')
-
-  time0 = filtering_result.first().get('system:time_start')
-  first = ee.List([
-    ee.Image(0).set('system:time_start', time0).select([0], ['precipitation'])
-  ])
-
-  cumulative = ee.ImageCollection(ee.List(filtering_result.iterate(accumulate, first)))
-
-  # precipitation should be casted to float or else
-  # it will throw error about incompatible types
-  result = cumulative.cast({'precipitation': 'float'}, ['precipitation']).getRegion(point, 500).getInfo()
-  result.pop(0)
-
-  # transform the data
-  mapped = map(cumulative_mapper, result)
 
   json_result = {
     'success': True,
-    'result': mapped
+    'result': query_result
   }
 
   return jsonify(**json_result)
