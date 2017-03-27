@@ -10,7 +10,7 @@ import StringIO
 from datetime import datetime
 from flask import Blueprint, jsonify, abort, request, make_response
 from flask_cors import cross_origin
-from app import EE_CREDENTIALS, cache
+from app import EE_CREDENTIALS, cache, app
 from app.gzipped import gzipped
 
 mod = Blueprint('chirps', __name__, url_prefix='/chirps')
@@ -32,6 +32,22 @@ def cumulative_mapper(item):
     'rainfall_0p': rainfall_0p,
     'rainfall': rainfall
   }
+
+def rainfall_clipper(image):
+  ft = "ft:%s" % app.config['PROVINCES_FT']['LOCATION_METADATA_FUSION_TABLE']
+  province = ee.FeatureCollection(ft)
+
+  place = request.args.get('place')
+
+  return image.clip(
+    province.filter(ee.Filter.eq(app.config['PROVINCES_FT']['LOCATION_FUSION_TABLE_NAME_COLUMN'], place))
+    .geometry()
+  )
+
+def rainfall_cache_key(*args, **kwargs):
+  path = request.path
+  args = str(hash(frozenset(request.args.items())))
+  return (path + args).encode('utf-8')
 
 def query_cumulative_rainfall_data(lat, lng, start_date, end_date):
   cache_key = 'rainfall_cum_rain_%s_%s_%s_%s' % (lat, lng, start_date, end_date)
@@ -86,7 +102,7 @@ def query_cumulative_rainfall_data(lat, lng, start_date, end_date):
 @mod.route('/<start_date>/<end_date>', methods=['GET'])
 @cross_origin()
 @gzipped
-@cache.memoize(43200)
+@cache.cached(timeout=43200, key_prefix=rainfall_cache_key)
 def index(start_date, end_date):
   ee.Initialize(EE_CREDENTIALS)
 
@@ -106,8 +122,11 @@ def index(start_date, end_date):
   )
 
   image_collection = ee.ImageCollection('UCSB-CHG/CHIRPS/PENTAD')
-
   image = image_collection.filterDate(start_date, end_date)
+
+  if request.args.get('place') is not None:
+    image = image.map(rainfall_clipper)
+
   new_image = image.median().clip(geometry)
 
   try:
