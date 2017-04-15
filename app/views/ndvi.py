@@ -131,19 +131,26 @@ def date_and_range(start_date, end_date):
 
   geometry = ee.Geometry.Polygon(geometric_bounds, 'EPSG:4326', True)
 
-  image_collection = ee.ImageCollection('LANDSAT/LC8_L1T')
-  filtered = image_collection.filterDate(start_date, end_date).filterBounds(geometry).map(ndvi_mapper)
+  # performing filterBounds will not work on this since this is a global composite
+  # see similar issue with discussion:
+  # <https://groups.google.com/forum/#!searchin/google-earth-engine-developers/filterbounds%7Csort:relevance/google-earth-engine-developers/__3vYdhh22k/wIE-INHXBQAJ>
+  image_collection = ee.ImageCollection('LANDSAT/LC8_L1T_8DAY_NDVI')
+  # filtered = image_collection.filterDate(start_date, end_date).filterBounds(geometry).map(ndvi_mapper)
+  filtered = image_collection.filterDate(start_date, end_date).map(ndvi_mapper)
+
+  # WORKAROUND: perform temporal reduction using mean/median reducers to clip it to a certain geometry
+  filtered = filtered.mean().clip(geometry)
 
   # clip the image collection to a certain place only
   if request.args.get('place') is not None:
     filtered = filtered.map(ndvi_clipper)
 
-  ndvi = ee.Algorithms.Landsat.simpleComposite(filtered, 50, 10, 40, True).select('B7', 'B4', 'B3')
+  ndvi = filtered
 
   map_parameters = {
-    'min': 0.05,
-    'max': 0.1,
-    'gamma': 1.6,
+    'min': 0,
+    'max': 1,
+    'palette': 'FFFFFF, CE7E45, FCD163, 66A000, 207401, 056201, 004C00, 023B01, 012E01, 011301'
   }
 
   map_object = ndvi.getMapId(map_parameters)
