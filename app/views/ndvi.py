@@ -15,6 +15,13 @@ from app import EE_CREDENTIALS, cache, app
 
 mod = Blueprint('ndvi', __name__, url_prefix='/ndvi')
 
+def get_province_geometry(province):
+  ft = "ft:%s" % app.config['PROVINCES_FT']['LOCATION_METADATA_FUSION_TABLE']
+  province_ft = ee.FeatureCollection(ft)
+  prov_filter = ee.Filter.eq(app.config['PROVINCES_FT']['LOCATION_FUSION_TABLE_NAME_COLUMN'], province)
+
+  return province_ft.filter(prov_filter).geometry()
+
 def ndvi_mapper(image):
   hansen_image = ee.Image('UMD/hansen/global_forest_change_2013')
   data = hansen_image.select('datamask')
@@ -139,11 +146,11 @@ def date_and_range(start_date, end_date):
   filtered = image_collection.filterDate(start_date, end_date).map(ndvi_mapper)
 
   # WORKAROUND: perform temporal reduction using mean/median reducers to clip it to a certain geometry
-  filtered = filtered.mean().clip(geometry)
-
-  # clip the image collection to a certain place only
+  filtered = filtered.mean()
   if request.args.get('place') is not None:
-    filtered = filtered.map(ndvi_clipper)
+    filtered = filtered.clip(get_province_geometry(request.args.get('place')))
+  else:
+    filtered = filtered.clip(geometry)
 
   ndvi = filtered
 
