@@ -33,6 +33,15 @@ def cumulative_mapper(item):
     'rainfall': rainfall
   }
 
+def rainfall_mapper(item):
+  timestamp = item[3] / 1000
+  rainfall = item[4]
+
+  return {
+    'time': datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d'),
+    'rainfall': rainfall
+  }
+
 def rainfall_clipper(image):
   ft = "ft:%s" % app.config['PROVINCES_FT']['LOCATION_METADATA_FUSION_TABLE']
   province = ee.FeatureCollection(ft)
@@ -48,6 +57,39 @@ def rainfall_cache_key(*args, **kwargs):
   path = request.path
   args = str(hash(frozenset(request.args.items())))
   return (path + args).encode('utf-8')
+
+def query_daily_rainfall_data(lat, lng, start_date, end_date):
+  cache_key = 'rainfall_daily_rain_%s_%s_%s_%s' % (lat, lng, start_date, end_date)
+
+  final_result = cache.get(cache_key)
+
+  if final_result is None:
+    ee.Initialize(EE_CREDENTIALS)
+
+    # create a geometry point instance for cropping data later
+    point = ee.Geometry.Point(float(lng), float(lat))
+
+    image_collection = ee.ImageCollection('UCSB-CHG/CHIRPS/PENTAD')
+    filtering_result = image_collection.filterDate(start_date, end_date)
+
+    # check if there are features retrieved
+    if len(filtering_result.getInfo()['features']) == 0:
+      return None
+
+    # precipitation should be casted to float or else
+    # it will throw error about incompatible types
+    result = filtering_result.cast({'precipitation': 'float'}, ['precipitation']).getRegion(point, 500).getInfo()
+
+    # remove the headers from the
+    result.pop(0)
+
+    # transform the data
+    final_result = map(rainfall_mapper, result)
+
+    # cache it for 12 hours
+    cache.set(cache_key, final_result, timeout=43200)
+
+  return final_result
 
 def query_cumulative_rainfall_data(lat, lng, start_date, end_date):
   cache_key = 'rainfall_cum_rain_%s_%s_%s_%s' % (lat, lng, start_date, end_date)
@@ -152,6 +194,57 @@ def index(start_date, end_date):
     abort(404, 'Rainfall data not found.')
 
   return jsonify(**result)
+
+# cache the result of this endpoint for 12 hours
+@mod.route('/daily-rainfall/<lat>/<lng>/<start_date>/<end_date>', methods=['GET'])
+@cross_origin()
+@gzipped
+def daily_rainfall(lat, lng, start_date, end_date):
+  query_result = query_daily_rainfall_data(lat, lng, start_date, end_date)
+  output_format = 'json'
+  available_formats = ['json', 'csv']
+  requested_format = request.args.get('fmt')
+
+  if requested_format is not None:
+    # abort the request and throw HTTP 400 since the format
+    # is not on the list of available formats
+    if not requested_format in available_formats:
+      abort(400, 'Unsupported format')
+
+    # override the default output format
+    output_format = requested_format
+
+  # abort the request if the query_result contains None value
+  if query_result is None:
+    abort(404, 'Rainfall data not found')
+
+  response = None
+
+  if output_format == 'json':
+    json_result = {
+      'success': True,
+      'result': query_result
+    }
+
+    response = jsonify(**json_result)
+  else:
+    si = StringIO.StringIO()
+    cw = csv.writer(si)
+
+    cw.writerow(['Time', 'Precipitation'])
+    for value in query_result:
+      cw.writerow([
+        value['time'],
+        value['rainfall']
+      ])
+
+    filename = 'dailt-rainfall-%s-%s-%s-%s' % (lat, lng, start_date, end_date)
+
+    response = make_response(si.getvalue())
+    response.headers['Content-Disposition'] = 'attachment; filename=%s.csv' % filename
+    response.headers['Content-type'] = 'text/csv'
+
+  return response
 
 # cache the result of this endpoint for 12 hours
 @mod.route('/cumulative-rainfall/<lat>/<lng>/<start_date>/<end_date>', methods=['GET'])
