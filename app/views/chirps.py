@@ -27,6 +27,10 @@ def cumulative_mapper(item):
   rainfall_0p = item[4]
   rainfall = item[5]
 
+  # round to 2 decimal places if it has value
+  if rainfall is not None:
+    rainfall = round(rainfall, 2)
+
   return {
     'time': datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d'),
     'rainfall_0p': rainfall_0p,
@@ -36,6 +40,10 @@ def cumulative_mapper(item):
 def rainfall_mapper(item):
   timestamp = item[3] / 1000
   rainfall = item[4]
+
+  # round to 2 decimal places if it has value
+  if rainfall is not None:
+    rainfall = round(rainfall, 2)
 
   return {
     'time': datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d'),
