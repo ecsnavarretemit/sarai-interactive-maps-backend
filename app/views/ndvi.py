@@ -208,7 +208,7 @@ def time_series(lat, lng, start_date, end_date):
     si = StringIO.StringIO()
     cw = csv.writer(si)
 
-    cw.writerow(['Time', 'NDVI'])
+    cw.writerow(['Date', 'NDVI'])
     for value in query_result:
       cw.writerow([
         value['time'],

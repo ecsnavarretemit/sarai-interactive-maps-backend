@@ -231,7 +231,7 @@ def daily_rainfall(lat, lng, start_date, end_date):
     si = StringIO.StringIO()
     cw = csv.writer(si)
 
-    cw.writerow(['Time', 'Precipitation'])
+    cw.writerow(['Date', 'Precipitation'])
     for value in query_result:
       cw.writerow([
         value['time'],
@@ -282,7 +282,7 @@ def cumulative_rainfall(lat, lng, start_date, end_date):
     si = StringIO.StringIO()
     cw = csv.writer(si)
 
-    cw.writerow(['Time', 'Precipitation'])
+    cw.writerow(['Date', 'Precipitation'])
     for value in query_result:
       cw.writerow([
         value['time'],
