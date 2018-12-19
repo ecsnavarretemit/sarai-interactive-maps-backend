@@ -11,6 +11,7 @@ flask-marshmallow==0.7.0
 Flask-SQLAlchemy==2.1
 Flask-Testing==0.6.1
 google-api-python-client==1.5.5
+gunicorn==19.8.1
 httplib2==0.9.2
 idna==2.1
 ipaddress==1.0.17
